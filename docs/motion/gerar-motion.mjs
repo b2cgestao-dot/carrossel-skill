@@ -99,7 +99,7 @@ body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#11
 ${words('h1','Sem processo, sai <em>isso.</em>',X.bad-700,150)}
 ${bad.map((s,i)=>`<div class="o card" id="b${i}" style="left:${sx('bad',i)}px;top:560px"><img src="${s}"></div>`).join('')}
 <div class="o think" id="think" style="left:${X.think}px;top:540px"><div class="top"><b>&gt;_</b>Codex · image gen</div>
- <div class="msg" id="msg"><img src="${rel('exemplos/oratry/ta-caro/v2/slide-01.png')}">Gera um asset 3D: pessoa levantando a mão numa reunião, no estilo da série anexada.</div>
+ <div class="msg" id="msg"><img src="${rel('exemplos/oratry/ta-caro/v2/slide-01.png')}">Gera um asset 3D: microfone com balão de fala, no estilo da série anexada.</div>
  <div class="canvas"><div class="lb" id="thl">Gerando imagem</div><div id="dots">${'<i></i>'.repeat(GW*GH)}</div><img id="asset" src="${rel('docs/motion/capturas/asset.png')}"><div class="pct" id="pct">0%</div></div></div>
 ${words('h2','Com a skill, sai <em>isso.</em>',X.good-700,150)}
 ${words('h3','Faltou asset? O Codex <em>gera.</em>',X.think-700,70,56)}
