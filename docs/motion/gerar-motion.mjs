@@ -1,4 +1,4 @@
-// Motion de lançamento (1920x1080, 30fps): quadro a quadro no Chromium e MP4 com ffmpeg.
+// Motion de lançamento (1920x1080, 30fps, 26s): cena 3D renderizada quadro a quadro no Chromium e MP4 com ffmpeg.
 // Uso: node docs/motion/gerar-motion.mjs   (precisa de ffmpeg no PATH)
 import {readFile,mkdir,rm} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -10,54 +10,80 @@ const {chromium}=require('../../skills/carrossel/node_modules/playwright');
 const here=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(here,'../..');
 const uri=async(p,t='image/png')=>`data:${t};base64,${(await readFile(path.join(root,p))).toString('base64')}`;
 const ex='exemplos/oratry/ta-caro/';
-const bad=await Promise.all([1,2,3,4].map(i=>uri(`${ex}v1/slide-0${i}.png`)));
-const good=await Promise.all([1,2,3,4].map(i=>uri(`${ex}v2/slide-0${i}.png`)));
+const bad=await Promise.all([1,2,3,4].map(i=>uri(`${ex}v1/slide-0${i}-2x.png`)));
+const good=await Promise.all([1,2,3,4].map(i=>uri(`${ex}v2/slide-0${i}-2x.png`)));
 const comp=await uri('docs/comparacao.png');
-const logo=await uri('exemplos/oratry/marca/logo.svg','image/svg+xml');
-const FPS=30,DUR=24;
+const FPS=30,DUR=26;
+const grain=`url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)" opacity=".5"/></svg>')}")`;
 const html=`<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap"><style>
-*{box-sizing:border-box}html,body{width:1920px;height:1080px;margin:0;overflow:hidden}
-body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#111827;background:radial-gradient(1400px 800px at 70% 110%,#dce9fd,transparent 70%),radial-gradient(#dbe6f5 1.4px,#0000 1.5px) 0 0/28px 28px,#f8faff}
-.l{position:absolute;opacity:0;will-change:transform,opacity}
-.cap{left:0;right:0;top:92px;text-align:center;font-size:64px;font-weight:500;letter-spacing:-2.4px}.cap em{font-style:normal;color:#0869f5}
-.term{left:460px;top:390px;width:1000px;border-radius:26px;background:#0f1729;box-shadow:0 40px 90px #0a1a3a40;overflow:hidden}
-.term .bar{height:52px;display:flex;gap:10px;align-items:center;padding:0 22px;background:#1a2438}.term .bar i{width:14px;height:14px;border-radius:50%;background:#33415a}
-.term .tx{padding:44px 44px 54px;font:500 44px ui-monospace,Menlo,monospace;color:#e6edf8;white-space:nowrap}.term .tx b{color:#5da2ff;font-weight:500}.cur{display:inline-block;width:22px;height:46px;background:#5da2ff;vertical-align:-8px;margin-left:4px}
-.sl{width:400px;height:500px;border-radius:16px;overflow:hidden;box-shadow:0 30px 60px #0a1a3a30}.sl img{width:100%;height:100%;display:block}
-.step{left:170px;display:flex;align-items:center;gap:22px;font-size:46px;font-weight:500;letter-spacing:-1.2px}.step span{width:60px;height:60px;border-radius:50%;background:#e1eeff;color:#0869f5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700}
-.win{left:300px;top:230px;width:1320px;border-radius:22px;overflow:hidden;box-shadow:0 40px 100px #0a1a3a35}.win img{width:100%;display:block}
-.end{left:0;right:0;text-align:center}
+*{box-sizing:border-box}html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:#04070f}
+body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#eef4ff}
+#bg{position:absolute;inset:-10%;background:radial-gradient(900px 600px at 50% 60%,#0b3a8a,transparent 70%),radial-gradient(700px 500px at 80% 20%,#062a66aa,transparent 70%),#04070f}
+#stage{position:absolute;inset:0;perspective:1600px;perspective-origin:50% 45%}
+#world{position:absolute;inset:0;transform-style:preserve-3d}
+.o{position:absolute;left:50%;top:50%;opacity:0;will-change:transform,opacity,filter}
+.card{width:440px;height:550px;margin:-275px 0 0 -220px;border-radius:18px;overflow:hidden;box-shadow:0 60px 120px #000a}.card img{width:100%;height:100%;display:block}
+.txt{left:0;right:0;text-align:center}
+.big{font-size:96px;font-weight:500;letter-spacing:-4px;line-height:1}.big em{font-style:normal;color:#5da2ff}
+.small{font-size:30px;color:#9fb6d8;letter-spacing:.5px}
+.term{width:1040px;margin-left:-520px;margin-top:-40px;font:500 60px ui-monospace,Menlo,monospace;color:#e6edf8;white-space:nowrap}.term b{color:#5da2ff;font-weight:500}.cur{display:inline-block;width:28px;height:62px;background:#5da2ff;vertical-align:-10px;margin-left:6px;box-shadow:0 0 30px #5da2ff}
+.win{width:1400px;margin:-410px 0 0 -700px;border-radius:22px;overflow:hidden;box-shadow:0 80px 160px #000c}.win img{width:100%;display:block}
+.step{left:170px;font-size:58px;font-weight:500;letter-spacing:-1.8px;white-space:nowrap}.step span{color:#5da2ff;margin-right:22px}
+#sweep{position:absolute;top:0;bottom:0;width:900px;left:0;pointer-events:none;mix-blend-mode:screen;opacity:0;background:linear-gradient(100deg,transparent 30%,#7fb4ff40 50%,transparent 70%)}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 50%,#000c 100%)}
+#grain{position:absolute;inset:-50%;pointer-events:none;opacity:.07;background:${grain}}
+.bar{position:absolute;left:0;right:0;height:0;background:#000;z-index:9}
 </style>
-<div class="l cap" id="c1">Um prompt solto entrega <em>isso.</em></div>
-<div class="l cap" id="c2">Com a skill, entrega <em>isso.</em></div>
-<div class="l cap" id="c3">O que muda é o <em>processo.</em></div>
-<div class="l cap" id="c4">Galeria, versões e <em>comparação.</em></div>
-<div class="l term" id="term"><div class="bar"><i></i><i></i><i></i></div><div class="tx"><b>›</b> <span id="typed"></span><span class="cur" id="cur"></span></div></div>
-${bad.map((s,i)=>`<div class="l sl" id="b${i}"><img src="${s}"></div>`).join('')}
-${good.map((s,i)=>`<div class="l sl" id="g${i}"><img src="${s}"></div>`).join('')}
-${['Roteiro aprovado antes do visual','Galeria como referência','Assets da própria marca','Checagem de cada slide'].map((t,i)=>`<div class="l step" id="s${i}" style="top:${300+i*130}px"><span>${i+1}</span>${t}</div>`).join('')}
-<div class="l win" id="win"><img src="${comp}"></div>
-<div class="l end" id="e1" style="top:330px;font:500 150px ui-monospace,Menlo,monospace;letter-spacing:-6px;color:#0869f5">/carrossel</div>
-<div class="l end" id="e2" style="top:540px;font-size:56px;font-weight:500;letter-spacing:-1.6px">Skill grátis para Claude Code e Codex</div>
-<div class="l end" id="e3" style="top:650px;font-size:36px;color:#5b7291">github.com/guilhermealvestech/carrossel-skill</div>
-<div class="l" id="mk" style="left:80px;top:60px;display:flex;align-items:center;gap:12px;font-size:32px;font-weight:500;color:#0869f5;letter-spacing:-1px"><img src="${logo}" style="width:34px">Oratry</div>
+<div id="bg"></div>
+<div id="stage"><div id="world">
+<div class="o term" id="term"><b>›</b> <span id="typed"></span><span class="cur" id="cur"></span></div>
+${bad.map((s,i)=>`<div class="o card" id="b${i}"><img src="${s}"></div>`).join('')}
+${good.map((s,i)=>`<div class="o card" id="g${i}"><img src="${s}"></div>`).join('')}
+<div class="o win" id="win"><img src="${comp}"></div>
+</div></div>
+<div class="o txt" id="t1" style="top:110px"><div class="big">Sem processo.</div></div>
+<div class="o txt" id="t2" style="top:110px"><div class="big">Com <em>/carrossel.</em></div></div>
+${['Roteiro antes do visual','A galeria como referência','Assets da própria marca','Cada slide conferido'].map((t,i)=>`<div class="o step" id="s${i}" style="top:${300+i*120}px"><span>0${i+1}</span>${t}</div>`).join('')}
+<div class="o txt" id="t4" style="top:70px"><div class="big" style="font-size:68px">Versões lado a lado.</div></div>
+<div class="o txt" id="e1" style="top:340px"><div class="big" style="font:500 170px ui-monospace,Menlo,monospace;letter-spacing:-8px;color:#fff;text-shadow:0 0 60px #2f7dff88">/carrossel</div></div>
+<div class="o txt" id="e2" style="top:590px"><div style="font-size:52px;font-weight:500;letter-spacing:-1.4px">Skill grátis para Claude Code e Codex</div></div>
+<div class="o txt" id="e3" style="top:680px"><div class="small">github.com/guilhermealvestech/carrossel-skill</div></div>
+<div id="sweep"></div><div id="vig"></div><div id="grain"></div>
+<div class="bar" id="bt" style="top:0"></div><div class="bar" id="bb" style="bottom:0"></div>
 <script>
-const $=id=>document.getElementById(id),cl=v=>Math.max(0,Math.min(1,v)),ease=t=>1-Math.pow(1-cl(t),3);
-// Visível de a até b, com 0.45s de entrada e saída. Retorna o progresso de entrada (0..1) e a opacidade.
-const win=(t,a,b,f=.45)=>({p:ease((t-a)/f),o:Math.min(ease((t-a)/f),1-ease((t-(b-f))/f))});
-const set=(id,o,tr='')=>{const e=$(id);e.style.opacity=o;e.style.transform=tr};
-const fan=(pref,t,a,b,cx,dy=0)=>[0,1,2,3].forEach(i=>{const {p,o}=win(t,a+i*.12,b);const off=(i-1.5);const x=cx+off*260*p-200,r=off*7*p;set(pref+i,o,'translate('+x+'px,'+(300+dy+Math.abs(off)*30*p+(1-p)*80)+'px) rotate('+r+'deg)');$(pref+i).style.left='0';$(pref+i).style.top='0';$(pref+i).style.zIndex=10-Math.abs(Math.round(off*2))});
+const $=id=>document.getElementById(id),cl=v=>Math.max(0,Math.min(1,v));
+const io=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,out=t=>1-Math.pow(1-cl(t),3);
+// Janela [a,b] com entrada/saída de f segundos: p = progresso de entrada, o = opacidade, k = progresso total.
+const w=(t,a,b,f=.7)=>({p:out((t-a)/f),o:Math.min(out((t-a)/f),1-out((t-(b-f))/f)),k:cl((t-a)/(b-a))});
+const css=(id,o,tr,blur=0,extra='')=>{const e=$(id);e.style.opacity=o;e.style.transform=tr;e.style.filter=((blur>.05?'blur('+blur.toFixed(2)+'px) ':'')+extra)||'none'};
 window.render=t=>{
- const cmd='/carrossel cliente disse que tá caro';
- let w=win(t,0,3.8);set('term',w.o,'translateY('+(1-w.p)*40+'px)');$('typed').textContent=cmd.slice(0,Math.floor(cl((t-.5)/1.8)*cmd.length));$('cur').style.opacity=Math.floor(t*2.5)%2?1:.2;
- w=win(t,0,24);set('mk',w.o);
- w=win(t,3.8,7.4);set('c1',w.o,'translateY('+(1-w.p)*20+'px)');fan('b',t,3.9,7.4,960);
- w=win(t,7.4,11.6);set('c2',w.o,'translateY('+(1-w.p)*20+'px)');fan('g',t,7.5,11.6,960);
- w=win(t,11.6,16.2);set('c3',w.o,'translateY('+(1-w.p)*20+'px)');
- [0,1,2,3].forEach(i=>{const s=win(t,12+i*.5,16.2);set('s'+i,s.o,'translateX('+(1-s.p)*-40+'px)')});
- if(t>11.6&&t<16.2){[0,1,2,3].forEach(i=>{const s=win(t,11.7,16.2);set('g'+i,s.o,'translate('+(1240+i*34)+'px,'+(300+i*26)+'px) rotate('+(i*3-4)+'deg) scale(.9)');$('g'+i).style.zIndex=10-i})}
- w=win(t,16.2,20.4);set('c4',w.o,'translateY('+(1-w.p)*20+'px)');set('win',w.o,'scale('+(0.92+0.08*w.p+(cl((t-16.2)/4.2))*0.04)+')');
- w=win(t,20.4,24.6);['e1','e2','e3'].forEach((id,i)=>{const s=win(t,20.4+i*.25,24.6);set(id,s.o,'translateY('+(1-s.p)*30+'px)')});
+ // Câmera com respiração lenta e contínua.
+ $('world').style.transform='translateZ('+(Math.sin(t*.25)*20)+'px) rotateY('+(Math.sin(t*.18)*1.5)+'deg)';
+ $('bg').style.transform='translate('+(Math.sin(t*.2)*30)+'px,'+(Math.cos(t*.15)*20)+'px) scale(1.05)';
+ $('grain').style.transform='translate('+((t*997)%60-30)+'px,'+((t*631)%60-30)+'px)';
+ $('bt').style.height=$('bb').style.height=(t<3.2?90:t>22.3?90*out((t-22.3)/1):90*(1-out((t-3.2)/1)))+'px';
+ // 1. Terminal.
+ let s=w(t,.3,3.8,.6);const cmd='/carrossel cliente disse que tá caro';
+ css('term',s.o,'translateZ('+(-200+260*io(s.k))+'px)',(1-s.p)*12);$('typed').textContent=cmd.slice(0,Math.floor(cl((t-.8)/2)*cmd.length));$('cur').style.opacity=Math.floor(t*2.4)%2?1:.25;
+ // 2. Sem processo: slides frios, à deriva, fora de foco.
+ s=w(t,3.6,8.6);css('t1',s.o,'translateY('+(1-s.p)*30+'px)',(1-s.p)*10);
+ [0,1,2,3].forEach(i=>{const c=w(t,3.7+i*.15,8.6,.9),x=(i-1.5)*480,z=-300-Math.abs(i-1.5)*200+c.k*160;
+  css('b'+i,c.o*.9,'translate3d('+x+'px,'+(70+(i%2)*40-c.k*30)+'px,'+z+'px) rotateY('+(-(i-1.5)*14)+'deg) rotateZ('+((i%2?1:-1)*3)+'deg)',(1-c.p)*20+Math.abs(i-1.5)*1.5,'saturate(.6) brightness(.8)')});
+ // 3. Com a skill: surgem da profundidade com foco puxado e varredura de luz.
+ s=w(t,8.6,13.8);css('t2',s.o,'translateY('+(1-s.p)*30+'px)',(1-s.p)*10);
+ $('sweep').style.opacity=t>9.6&&t<11.4?Math.sin((t-9.6)/1.8*Math.PI):0;$('sweep').style.transform='translateX('+(-900+cl((t-9.6)/1.8)*2800)+'px)';
+ if(t<13.8)[0,1,2,3].forEach(i=>{const c=w(t,8.8+i*.18,13.8,1),x=(i-1.5)*470*c.p,z=-900+800*io(cl((t-8.8-i*.18)/1.4));
+  css('g'+i,c.o,'translate3d('+x+'px,'+(80-(1-c.p)*120)+'px,'+z+'px) rotateY('+(-(i-1.5)*12*c.p)+'deg)',(1-c.p)*24)});
+ // 4. Processo: os slides recuam em pilha à direita e os passos entram no ritmo.
+ if(t>=13.8)[0,1,2,3].forEach(i=>{const c=w(t,13.8,19,.8),k=io(cl((t-13.8)/1.2));
+  css('g'+i,c.o,'translate3d('+(520+i*40)+'px,'+(40+i*30)+'px,'+(-200-i*160+c.k*80)+'px) rotateY('+(-22*k)+'deg) rotateZ('+(i*2-3)+'deg)',i*2)});
+ [0,1,2,3].forEach(i=>{const c=w(t,14.2+i*.75,19,.5);css('s'+i,c.o,'translateX('+(1-c.p)*-60+'px)',(1-c.p)*8)});
+ // 5. Galeria: plano inclinado que se endireita.
+ s=w(t,19,23.2,.9);const k=io(cl((t-19)/2.4));
+ css('t4',s.o,'translateY('+(1-s.p)*30+'px)',(1-s.p)*10);
+ css('win',s.o,'translate3d(0,'+(70-k*20)+'px,'+(-500+k*380)+'px) rotateX('+(28*(1-k))+'deg) rotateY('+(-14*(1-k))+'deg)',(1-s.p)*14);
+ // 6. Assinatura.
+ ['e1','e2','e3'].forEach((id,i)=>{const c=w(t,23+i*.35,27,.9);css(id,c.o,'translateY('+(1-c.p)*24+'px) scale('+(1.04-.04*c.p)+')',(1-c.p)*14)});
 };
 </script>`;
 const frames=path.join(here,'frames');await rm(frames,{recursive:true,force:true});await mkdir(frames);
@@ -65,6 +91,6 @@ const b=await chromium.launch();const pg=await b.newPage({viewport:{width:1920,h
 await pg.setContent(html,{waitUntil:'networkidle'});await pg.evaluate(()=>document.fonts.ready);
 for(let f=0;f<FPS*DUR;f++){await pg.evaluate(t=>render(t),f/FPS);await pg.screenshot({path:path.join(frames,String(f).padStart(4,'0')+'.png')})}
 await b.close();
-execFileSync('ffmpeg',['-y','-loglevel','error','-framerate',String(FPS),'-i',path.join(frames,'%04d.png'),'-c:v','libx264','-pix_fmt','yuv420p','-crf','16','-preset','slow',path.join(here,'lancamento.mp4')]);
+execFileSync('ffmpeg',['-y','-loglevel','error','-framerate',String(FPS),'-i',path.join(frames,'%04d.png'),'-vf','fade=in:0:15,fade=out:'+(FPS*DUR-20)+':20','-c:v','libx264','-pix_fmt','yuv420p','-crf','16','-preset','slow','-movflags','+faststart',path.join(here,'lancamento.mp4')]);
 await rm(frames,{recursive:true,force:true});
 console.log('ok',path.join(here,'lancamento.mp4'));

@@ -1,15 +1,28 @@
-// v1 "sem skill": o mesmo tema pedido num prompt solto ("faz um carrossel sobre cliente que diz tá caro").
-// Fica aqui de propósito, para comparar com a v2 na galeria.
+// v1 "sem skill": slides novos com a marca e os assets reais da Oratry (sem assets), montados sem processo
+// (sem roteiro aprovado, sem galeria como referência, sem checagem). Serve de contraste com a v2.
+// Uso: node gerar-v1-sem-skill.mjs && node <skill>/scripts/render.mjs ta-caro/v1 --dir exemplos/oratry
 import {writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const here=path.dirname(fileURLToPath(import.meta.url));
+const head=`<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,700&display=swap"><style>
+html,body{width:1080px;height:1350px;margin:0;overflow:hidden}body{position:relative;font-family:Satoshi,sans-serif;color:#111827;background:#fff}
+.logo{position:absolute;left:28px;top:24px;display:flex;align-items:center;gap:8px;font-size:22px;color:#0869f5;z-index:2}.logo img{width:24px}
+.n{position:absolute;right:30px;top:26px;font:700 34px Arial,sans-serif;z-index:2}
+.t{position:relative;text-align:center;font:700 66px Arial,sans-serif;margin:150px 50px 0;line-height:1.15}
+.p{position:relative;text-align:center;font:24px Georgia,serif;color:#9aa9bd;margin:24px 120px 0;line-height:1.5}
+.btn{position:absolute;left:50%;transform:translateX(-50%);bottom:70px;background:linear-gradient(90deg,#0869f5,#5aa2ff);color:#fff;font:700 28px Arial;padding:20px 40px;border-radius:12px;white-space:nowrap}
+</style><body>`;
+const logo=`<div class="logo"><img src="../../marca/logo.svg">Oratry</div>`;
+const n=i=>`<div class="n">${i}/4</div>`;
 const slides=[
- ['💰😱','CLIENTE DISSE QUE ESTÁ CARO?!','Veja como responder 👇'],
- ['🤔💡','DICA 1: NÃO É SOBRE O PREÇO!!','Muitas vezes o cliente não entendeu o VALOR do seu produto ou serviço. Por isso é importante sempre explicar bem os benefícios.'],
- ['🚀✅','DICA 2: MOSTRE O VALOR','Mostre os resultados, os diferenciais e tudo que o cliente vai ganhar ao fechar com você!!'],
- ['🔥📲','TREINE COM A ORATRY!','Baixe agora e melhore sua comunicação 💪 Link na bio!! #vendas #sucesso #foco']];
-for(const [i,[e,t,p]] of slides.entries())await writeFile(path.join(here,'v1',`slide-0${i+1}.html`),`<!doctype html><meta charset="utf-8"><style>
-html,body{width:1080px;height:1350px;margin:0;overflow:hidden}body{background:linear-gradient(135deg,#7b3fe4,#e94b9a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:Arial,sans-serif;color:#fff;padding:90px;box-sizing:border-box}
-.e{font-size:120px}.t{font-size:84px;font-weight:700;margin-top:30px;text-shadow:0 6px 18px #0006;line-height:1.1}.p{font-size:38px;margin-top:40px;opacity:.92;line-height:1.35}.n{position:absolute;top:60px;right:70px;font-size:30px;background:#fff3;padding:12px 26px;border-radius:40px}</style>
-<div class="n">0${i+1}/04</div><div class="e">${e}</div><div class="t">${t}</div><div class="p">${p}</div>`);
+`${logo}${n(1)}<div class="t">CLIENTE DISSE “TÁ CARO”? 💸</div><div class="p">Descubra agora as melhores técnicas para responder objeções de preço e fechar mais vendas!!</div>
+<div class="btn">Arraste para o lado →</div>`,
+`${logo}${n(2)}<div class="t" style="text-align:left;margin-left:60px;font-size:58px">1. Às vezes não é o preço</div>
+<div class="p" style="text-align:left;margin-left:60px;margin-right:60px;font-size:30px;color:#5b7291">Muitas vezes o cliente não entendeu o valor do que você oferece. Antes de responder, pergunte o que ele esperava encontrar, entenda o contexto da compra, descubra quais são as prioridades dele e só então apresente sua proposta de forma clara e objetiva.</div>`,
+`<div style="position:absolute;inset:0;background:#0869f5"></div><div class="logo" style="color:#fff"><img src="../../marca/logo.svg">Oratry</div><div class="n" style="color:#fff">3/4</div>
+<div class="t" style="color:#fff;margin-top:200px">2. MOSTRE O VALOR ✅</div>
+<div class="p" style="color:#bcd6ff">"Deixa eu te mostrar o que está incluído"</div>`,
+`${logo}${n(4)}<div class="t">TREINE COM A ORA 🚀</div><div class="p">Na Oratry você ensaia por voz, recebe feedback e tenta de novo. Baixe agora e transforme sua comunicação!</div>
+<div class="btn">LINK NA BIO 👆</div>`];
+for(const [i,s] of slides.entries())await writeFile(path.join(here,'v1',`slide-0${i+1}.html`),head+s);
