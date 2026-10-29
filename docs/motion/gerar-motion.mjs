@@ -1,5 +1,5 @@
 // Motion de lançamento (1920x1080, 30fps, 30s): canvas claro único percorrido por uma câmera com zooms.
-// Roteiro: comando → sem skill → geração com /carrossel (estilo Codex) → com skill → galeria real
+// Roteiro: comando → sem skill → com skill → asset novo gerado no Codex (image gen) → galeria real
 // com as animações de verdade do slider (abrir, comparar, avançar, copiar legenda) → assinatura.
 // Pré-requisito: node docs/motion/capturar-galeria.mjs <galeria/index.html> "<título do card>"
 // Uso: node docs/motion/gerar-motion.mjs [t1,t2,...]   (com tempos: só gera prévias desses instantes)
@@ -19,7 +19,7 @@ const FPS=30,DUR=30;
 const CMD='/carrossel cliente disse que tá caro';
 
 // Mundo: seções em X, linha central y=540. Slides 360x450. Janela: conteúdo 1440x900 sob uma barra de 44px.
-const X={term:960,bad:3200,think:5600,good:8000,gal:10600,end:13200};
+const X={term:960,bad:3200,good:5600,think:8000,gal:10600,end:13200};
 const sx=(row,i)=>X[row]+(i-1.5)*400;
 const WX=X.gal-720,WY=112,wp=([x,y])=>[WX+x,WY+y];
 const mid=b=>[b.x+b.width/2,b.y+b.height/2];
@@ -38,16 +38,16 @@ const [kx,ky]=wp(cardClip),[cmx,cmy]=wp(cmpPt),[dlx,dly]=wp(dlPt),[cpx,cpy]=wp(c
 const Z=2.15;
 const cam=[[0,960,540,1,0],[1.9,960,540,1.04,0],[2.5,X.bad,560,.95,0],[3,X.bad,560,.95,0],
  [3.4,sx('bad',0),540,Z,0],[3.7,sx('bad',0),540,Z,0],[3.95,sx('bad',1),540,Z,0],[4.2,sx('bad',1),540,Z,0],[4.45,sx('bad',2),540,Z,0],[4.7,sx('bad',2),540,Z,0],[4.95,sx('bad',3),540,Z,0],[5.3,sx('bad',3),540,Z*.96,0],
- [6,X.think,540,1,-1.2],[8.6,X.think,540,1.07,0],
- [9.2,X.good,560,.95,0],[9.6,X.good,560,.95,0],[10,sx('good',0),540,Z,0],[10.6,sx('good',0),540,Z*1.05,0],[10.9,sx('good',1),540,Z,0],[11.4,sx('good',1),540,Z*1.04,0],[11.7,sx('good',2),540,Z,0],[12.2,sx('good',2),540,Z*1.04,0],[12.5,sx('good',3),540,Z,0],[13,sx('good',3),540,Z*1.04,0],
+ [5.9,X.good,560,.95,-1],[6.2,X.good,560,.95,0],[6.6,sx('good',0),540,Z,0],[7.2,sx('good',0),540,Z*1.05,0],[7.5,sx('good',1),540,Z,0],[8,sx('good',1),540,Z*1.04,0],[8.3,sx('good',2),540,Z,0],[8.8,sx('good',2),540,Z*1.04,0],[9.1,sx('good',3),540,Z,0],[9.5,sx('good',3),540,Z*1.04,0],
+ [10.2,X.think,560,.95,1],[12.6,X.think,560,1.0,0],[13.2,X.think,560,1.06,0],
  [13.8,X.gal,560,1.12,1],[16.3,X.gal,560,1.12,0],[17.1,kx,ky,1.6,0],[17.4,kx,ky,1.65,0],[17.9,X.gal,560,1.12,0],
  [18.8,cmx-260,cmy,1.45,0],[19.6,cmx-300,cmy,1.45,0],[20.3,X.gal-150,600,1.2,0],[22.4,X.gal-150,600,1.24,0],
  [22.9,dlx-200,dly,1.6,0],[23.6,dlx-200,dly,1.6,0],[24,cpx-260,cpy+90,1.6,0],[25.3,cpx-260,cpy+90,1.66,0],
  [26,X.end,540,1,0],[30,X.end,540,1.05,0]];
 const moves=[];for(let i=0;i<cam.length-1;i++){const [a,x,y,z]=cam[i],[b,x2,y2,z2]=cam[i+1];if(Math.hypot(x2-x,y2-y)>120||Math.abs(Math.log(z2/z))>.25)moves.push([a,b-a,Math.min(1,Math.hypot(x2-x,y2-y)/2400+.3)])}
 const typeAt=i=>.4+i*(1.2/CMD.length);
-const tasks=['Lendo o manual da marca','Consultando a galeria','Roteiro aprovado','Montando com os assets','Conferindo cada slide'];
-const taskAt=tasks.map((_,i)=>6.5+i*.42);
+const tasks=['Âncora da série anexada','Paleta da marca aplicada','Fundo transparente, 2048px'];
+const taskAt=tasks.map((_,i)=>10.7+i*.45);
 // Título animado palavra a palavra.
 const words=(id,html,left,top,size=62)=>`<div class="o h" id="${id}" style="left:${left}px;top:${top}px;font-size:${size}px">${html.split(' ').map(w=>`<span class="w">${w}</span>`).join(' ')}</div>`;
 
@@ -71,6 +71,7 @@ body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#11
 .think .lb{position:absolute;left:46px;top:36px;font:500 36px ui-monospace,Menlo,monospace;color:#5da2ff}
 .think .lb span{font-family:Satoshi;font-weight:400;margin-left:14px;background:linear-gradient(90deg,#7d8aa3 0,#fff 40%,#7d8aa3 80%) 0 0/300% 100%;-webkit-background-clip:text;color:transparent}
 #dots{position:absolute;left:520px;top:110px;right:40px;bottom:40px;display:grid;grid-template-columns:repeat(20,1fr);grid-template-rows:repeat(16,1fr);place-items:center}
+#asset{position:absolute;left:470px;top:90px;width:760px;opacity:0;filter:drop-shadow(0 30px 40px #000a)}
 #dots i{width:13px;height:13px;border-radius:50%;background:#3d8bff}
 .tasks{position:absolute;left:46px;top:130px;display:flex;flex-direction:column;gap:22px}
 .task{display:flex;align-items:center;gap:16px;font-size:28px;color:#d7e3f7;opacity:0}.task i{width:30px;height:30px;border-radius:50%;border:2px solid #3d8bff;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:17px;color:#fff}
@@ -93,10 +94,11 @@ body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#11
 <div class="o term" id="term" style="left:${X.term}px;top:540px"><div class="bar"><i></i><i></i><i></i></div><div class="tx"><b>›</b> <span id="typed"></span><span class="caret" id="caret"></span></div></div>
 ${words('h1','Sem processo, sai <em>isso.</em>',X.bad-700,150)}
 ${bad.map((s,i)=>`<div class="o card" id="b${i}" style="left:${sx('bad',i)}px;top:560px"><img src="${s}"></div>`).join('')}
-<div class="o think" id="think" style="left:${X.think}px;top:540px"><div class="lb">/carrossel<span id="thl">Criando com a sua marca</span></div>
+<div class="o think" id="think" style="left:${X.think}px;top:540px"><div class="lb">Codex<span id="thl">Gerando asset no estilo da marca</span></div>
  <div class="tasks">${tasks.map((t,i)=>`<div class="task" id="k${i}"><i id="ki${i}"></i>${t}</div>`).join('')}</div>
- <div id="dots">${'<i></i>'.repeat(320)}</div><div class="pct" id="pct">0%</div></div>
+ <div id="dots">${'<i></i>'.repeat(320)}</div><img id="asset" src="${rel('docs/motion/capturas/asset.png')}"><div class="pct" id="pct">0%</div></div>
 ${words('h2','Com a skill, sai <em>isso.</em>',X.good-700,150)}
+${words('h3','Faltou asset? O Codex <em>gera.</em>',X.think-700,70,56)}
 ${good.map((s,i)=>`<div class="o card" id="g${i}" style="left:${sx('good',i)}px;top:560px"><img src="${s}"></div>`).join('')}
 <div class="o win" id="win" style="left:${WX}px;top:${WY-44}px"><div class="bar"><i></i><i></i><i></i><span>carrosseis/index.html</span></div>
  <div class="view"><img id="gimg" src="${rel('docs/motion/capturas/galeria-full.png')}"><img id="clip" style="opacity:0">
@@ -125,12 +127,13 @@ window.render=async t=>{
  const v=Math.abs(nx-cx)*cz+Math.abs(Math.log(nz/cz))*700;$('mbv').setAttribute('stdDeviation',(v<6?0:Math.min(9,(v-6)/7)).toFixed(1)+' 0');
  const cmd=${JSON.stringify(CMD)};pop('term',t,.05);$('typed').textContent=cmd.slice(0,Math.floor(cl((t-.4)/1.2)*cmd.length));$('caret').style.opacity=Math.floor(t*2.4)%2?1:.2;
  kin('h1',t,2.45);[0,1,2,3].forEach(i=>pop('b'+i,t,2.5+i*.06,.45,100));
- pop('think',t,5.7,.6,60,.88);const g=cl((t-6.1)/2.4);$('pct').textContent=Math.round(100*(g<1?io(g)*.99:1))+'%';
+ kin('h3',t,10.05);pop('think',t,10.1,.6,60,.88);const g=cl((t-10.5)/1.6);
+ const ar=back((t-12.15)/.6),ao=out((t-12.1)/.3);$('asset').style.opacity=ao;$('asset').style.transform='scale('+(.6+.4*ar)+') translateY('+(1-cl(ar))*40+'px)';$('dots').style.opacity=1-ao*.85;$('pct').textContent=Math.round(100*(g<1?io(g)*.99:1))+'%';
  $('thl').style.backgroundPosition=(-(t*140)%300)+'% 0';
  ${JSON.stringify(taskAt)}.forEach((a,i)=>{const p=out((t-a)/.3),done=t>a+.35;$('k'+i).style.opacity=p;$('k'+i).style.transform='translateX('+(1-p)*-30+'px)';const ic=$('ki'+i);ic.textContent=done?'✓':'';ic.style.background=done?'#0869f5':'transparent'});
  dots.forEach((d,i)=>{const c=i%20,r=Math.floor(i/20);const w1=Math.sin(c*.5-r*.2-t*4.4),w2=Math.sin(c*.24+r*.46-t*2.7+1.3);const band=cl(1-Math.abs(c/19-(g*1.3-.15))*2.2);
   const val=cl(.12+.45*(.5+.5*w1)*(.5+.5*w2)+.6*band);d.style.transform='scale('+(.22+.88*val).toFixed(3)+')';d.style.opacity=(.12+.88*val).toFixed(3)});
- kin('h2',t,9.0);[0,1,2,3].forEach(i=>pop('g'+i,t,9.05+i*.06,.45,100));
+ kin('h2',t,5.75);[0,1,2,3].forEach(i=>pop('g'+i,t,5.8+i*.06,.45,100));
  pop('win',t,13.6,.6,80,.92);
  $('gimg').style.transform='translateY('+(-lerpK(S,Math.max(t,14.2),0)[0])+'px)';
  const f=clipFrame(t),clip=$('clip');
@@ -142,7 +145,7 @@ window.render=async t=>{
  const r=$('ring');if(ring!==null){r.style.left=px+'px';r.style.top=py+'px';r.style.opacity=(1-ring)*.8;r.style.transform='scale('+(.3+ring)+')'}else r.style.opacity=0;
  const to=win(t,24.2,25.6,.3),tt=$('toast');tt.style.left=(${cpPt[0]}-240)+'px';tt.style.top=(${cpPt[1]}+42)+'px';tt.style.opacity=to;tt.style.transform='translateY('+(1-to)*14+'px) scale('+(.9+.1*to)+')';
  pop('end',t,26.1,.6,40,.85);
- const tb=win(t,3.2,5.6),tg=win(t,9.9,13.2),tgl=win(t,13.8,25.7);
+ const tb=win(t,3.2,5.6),tg=win(t,6.4,9.8),tgl=win(t,13.8,25.7);
  show('tagBad',tb,'translateY('+(1-tb)*20+'px)');show('tagGood',tg,'translateY('+(1-tg)*20+'px)');show('tagGal',tgl,'translateY('+(1-tgl)*20+'px)');
 };
 </script>`;
@@ -160,9 +163,9 @@ function audio(){
  const thump=(t,amp=.4)=>{for(let i=0;i<SR*.3;i++){const s=i/SR;add(t,i,Math.sin(2*Math.PI*(55+90*Math.exp(-s*30))*s)*Math.exp(-s*9)*amp)}};
  for(let i=0;i<N;i++){const s=i/SR,env=Math.min(1,s/2)*Math.min(1,(DUR-s)/2),lfo=.6+.4*Math.sin(s*.8);const v=(Math.sin(2*Math.PI*130.81*s)+.7*Math.sin(2*Math.PI*196*s)+.5*Math.sin(2*Math.PI*329.63*s)+.3*Math.sin(2*Math.PI*493.88*s))*.016*env*lfo;L[i]+=v;R[i]+=v}
  [...CMD].forEach((_,i)=>key(typeAt(i)));thump(1.75);
- taskAt.forEach((t,i)=>blip(t+.35,820+i*90,.12));pop(8.5,880,.3);
+ taskAt.forEach((t,i)=>blip(t+.35,820+i*90,.12));pop(12.15,880,.32);
  moves.forEach(([t,d,a])=>whoosh(t,d,a*.8));
- [2.5,9.05,13.6].forEach(t=>pop(t,520,.22));
+ [2.5,5.8,10.1,13.6].forEach(t=>pop(t,520,.22));
  clicks.forEach(mouse);Object.values(CL).slice(0,4).forEach(([t])=>whoosh(t,.3,.28));pop(24.2,1040,.18);
  chime(26.15);
  let peak=0;for(let i=0;i<N;i++)peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]));const gn=.89/peak;
