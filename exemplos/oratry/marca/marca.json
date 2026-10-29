@@ -1,0 +1,19 @@
+{
+  "nome": "Oratry",
+  "tagline": "Treine sua fala com IA.",
+  "cores": {
+    "primaria": "#0869F5",
+    "texto": "#111827",
+    "texto-suave": "#5B7291",
+    "fundo": "#F8FAFF",
+    "fundo-profundo": "#E3EEFF",
+    "apoio": ["#BFDFFF", "#F3E9D2"]
+  },
+  "fonte": {
+    "familia": "Satoshi",
+    "arquivos": {},
+    "css": "https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap"
+  },
+  "logo": "logo.svg",
+  "plataformas": ["Instagram", "X"]
+}

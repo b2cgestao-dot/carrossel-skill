@@ -1,0 +1,22 @@
+{
+  "updatedAt": "2026-10-28",
+  "carousels": [
+    {
+      "id": "ta-caro",
+      "title": "Cliente disse “Tá caro”?",
+      "description": "Mesmo tema duas vezes: v1 com um prompt solto, v2 com a skill. Abra e use a comparação lado a lado.",
+      "createdAt": "2026-10-28",
+      "slideCount": 4,
+      "status": "Exemplo real · Oratry",
+      "cover": "ta-caro/v2/slide-01.png",
+      "viewer": "ta-caro/v2/ver-carrossel.html",
+      "versions": [
+        {"label": "v2 · com /carrossel", "href": "ta-caro/v2/ver-carrossel.html"},
+        {"label": "v1 · prompt solto, sem skill", "href": "ta-caro/v1/ver-carrossel.html"}
+      ],
+      "caption": "Cliente disse “Tá caro”?\n\nAntes de responder, descubra o que faltou aparecer. Às vezes, a questão não é o preço: é o valor que ainda não ficou claro.\n\nNa Oratry, a Ora faz o papel do cliente. Você ensaia sua resposta por voz, recebe feedback e tenta de novo.\n\nPrepare sua próxima conversa em oratry.com.br. Link na bio.",
+      "hashtags": ["#Vendas", "#Comunicacao", "#Negociacao"],
+      "platforms": ["Instagram"]
+    }
+  ]
+}
