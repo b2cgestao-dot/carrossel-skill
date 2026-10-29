@@ -157,29 +157,62 @@ window.render=async t=>{
 };
 </script>`;
 
-// Áudio: síntese direta em PCM (sem arquivos de terceiros).
+// Áudio: síntese direta em PCM (sem arquivos de terceiros). Trilha leve em Dó maior, efeitos com reverb de envio,
+// trilha abaixada (ducking) sob os whooshes e limitador suave no master.
 function audio(){
- const SR=44100,N=SR*DUR,L=new Float32Array(N),R=new Float32Array(N);let seed=7;const rnd=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296)*2-1;
- const add=(t,i,v,pan=0)=>{const k=Math.floor(t*SR)+i;if(k>=0&&k<N){L[k]+=v*(1-pan);R[k]+=v*(1+pan)}};
- const key=t=>{let lp=0;for(let i=0;i<SR*.035;i++){const e=Math.exp(-i/(SR*.006));lp+=(rnd()-lp)*.6;add(t,i,(rnd()-lp)*e*.16+Math.sin(i/SR*2*Math.PI*1800)*e*.05,rnd()*.2)}};
- const mouse=t=>{for(let i=0;i<SR*.04;i++){const s=i/SR,e=Math.exp(-s*180);add(t,i,(rnd()*.5+Math.sin(2*Math.PI*3200*s))*e*.22)}};
- const whoosh=(t,d,amp)=>{let a=0,b=0;const n=Math.floor(SR*(d+.25));for(let i=0;i<n;i++){const k=i/n,env=Math.pow(Math.sin(Math.PI*Math.min(1,k*1.15)),2),f=.02+.18*Math.sin(Math.PI*k);a+=f*(rnd()-a);b+=f*(a-b);add(t-.08,i,(a-b)*env*amp*2.2,(k-.5)*1.2)}};
- const pop=(t,f=660,amp=.3)=>{for(let i=0;i<SR*.18;i++){const s=i/SR,e=Math.exp(-s*28);add(t,i,Math.sin(2*Math.PI*(f*s+f*.6*Math.exp(-s*40)/40))*e*amp)}};
- const blip=(t,f,a=.08)=>{for(let i=0;i<SR*.06;i++){const s=i/SR;add(t,i,Math.sin(2*Math.PI*f*s)*Math.exp(-s*60)*a,.3)}};
- const chime=t=>[[880,.22],[1318.5,.16],[1760,.08]].forEach(([f,a])=>{for(let i=0;i<SR*2.4;i++){const s=i/SR;add(t,i,Math.sin(2*Math.PI*f*s)*Math.exp(-s*1.8)*a*Math.min(1,s*200))}});
- const thump=(t,amp=.4)=>{for(let i=0;i<SR*.3;i++){const s=i/SR;add(t,i,Math.sin(2*Math.PI*(55+90*Math.exp(-s*30))*s)*Math.exp(-s*9)*amp)}};
- for(let i=0;i<N;i++){const s=i/SR,env=Math.min(1,s/2)*Math.min(1,(DUR-s)/2),lfo=.6+.4*Math.sin(s*.8);const v=(Math.sin(2*Math.PI*130.81*s)+.7*Math.sin(2*Math.PI*196*s)+.5*Math.sin(2*Math.PI*329.63*s)+.3*Math.sin(2*Math.PI*493.88*s))*.016*env*lfo;L[i]+=v;R[i]+=v}
- [...CMD].forEach((_,i)=>key(typeAt(i)));thump(1.75);
- for(let k=0;k<12;k++)blip(10.6+1.7*k/12,700+k*45,.07);pop(12.4,880,.32);
- moves.forEach(([t,d,a])=>whoosh(t,d,a*.8));
- [2.5,5.8,10.1,13.6].forEach(t=>pop(t,520,.22));
- clicks.forEach(mouse);Object.values(CL).slice(0,4).forEach(([t])=>whoosh(t,.3,.28));pop(24.2,1040,.18);
- chime(26.15);
- let peak=0;for(let i=0;i<N;i++)peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]));const gn=.89/peak;
+ const SR=44100,N=SR*DUR,L=new Float32Array(N),R=new Float32Array(N),RL=new Float32Array(N),RR=new Float32Array(N),M=new Float32Array(N);
+ let seed=7;const rnd=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296)*2-1;
+ // send: quanto do som vai para o reverb.
+ const add=(t,i,v,pan=0,send=.25)=>{const k=Math.floor(t*SR)+i;if(k>=0&&k<N){const l=v*Math.sqrt((1-pan)/2)*1.41,r=v*Math.sqrt((1+pan)/2)*1.41;L[k]+=l;R[k]+=r;RL[k]+=l*send;RR[k]+=r*send}};
+ const duck=(t,d,depth=.45)=>{const a=Math.floor(t*SR),n=Math.floor(d*SR);for(let i=-SR*.08;i<n+SR*.25;i++){const k=a+i;if(k<0||k>=N)continue;const e=i<0?(1+i/(SR*.08)):i>n?1-(i-n)/(SR*.25):1;M[k]=Math.max(M[k],depth*cl(e))}};
+ const cl=v=>Math.max(0,Math.min(1,v));
+ // Tecla: clique curto e seco, com leve variação de timbre.
+ const key=(t,j)=>{let lp=0;const f=1500+((j*37)%7)*90;for(let i=0;i<SR*.03;i++){const e=Math.exp(-i/(SR*.004));lp+=(rnd()-lp)*.5;add(t,i,((rnd()-lp)*.09+Math.sin(i/SR*2*Math.PI*f)*.035)*e,((j%5)-2)*.08,.08)}};
+ const enter=t=>{key(t,3);for(let i=0;i<SR*.25;i++){const s=i/SR;add(t,i,Math.sin(2*Math.PI*(60+70*Math.exp(-s*35))*s)*Math.exp(-s*10)*.32,0,.1)}};
+ // Mouse: "clic" em duas partes (pressionar e soltar).
+ const mouse=t=>[[0,1],[.075,.6]].forEach(([o,a])=>{for(let i=0;i<SR*.02;i++){const s=i/SR,e=Math.exp(-s*400);add(t+o,i,(rnd()*.35+Math.sin(2*Math.PI*4200*s)*.6)*e*.16*a,.1,.05)}});
+ // Whoosh: ruído com filtro passa-banda que sobe e desce, atravessando o estéreo.
+ const whoosh=(t,d,amp,dir=1)=>{let lp1=0,lp2=0,hp=0;const n=Math.floor(SR*(d+.3));for(let i=0;i<n;i++){const k=i/n,env=Math.pow(Math.sin(Math.PI*Math.pow(k,.8)),2.2),fc=.008+.05*Math.pow(Math.sin(Math.PI*k),1.5);
+  lp1+=fc*(rnd()-lp1);lp2+=fc*(lp1-lp2);hp+=.01*(lp2-hp);add(t-.1,i,(lp2-hp)*env*amp*3.2,dir*(k-.5)*1.4,.35)}duck(t-.1,d+.3,.35)};
+ // Pop: bolha curta com harmônico e queda de afinação.
+ const pop=(t,f=660,amp=.2,pan=0)=>{for(let i=0;i<SR*.16;i++){const s=i/SR,e=Math.exp(-s*30)*Math.min(1,s*900),ph=2*Math.PI*(f*s+f*.5*(1-Math.exp(-s*45))/45);add(t,i,(Math.sin(ph)+.25*Math.sin(2*ph))*e*amp,pan,.3)}};
+ const swoosh=(t,amp=.22)=>whoosh(t,.22,amp,-1);
+ // Brilho da geração: notas da escala subindo, bem baixinho, e um acorde no reveal.
+ const tone=(t,f,a,d=.5,pan=0,send=.5)=>{for(let i=0;i<SR*d;i++){const s=i/SR,e=Math.exp(-s*(5/d))*Math.min(1,s*300);add(t,i,(Math.sin(2*Math.PI*f*s)+.15*Math.sin(4*Math.PI*f*s))*e*a,pan,send)}};
+ const chime=t=>[[523.25,.14,0],[783.99,.11,-.3],[1046.5,.09,.3],[1567.98,.05,0]].forEach(([f,a,p],j)=>tone(t+j*.06,f,a,2.6,p,.6));
+ // Trilha: pad suave (acordes de 4 s) e pulso leve de bumbo a partir da parte com skill.
+ const chords=[[130.81,164.81,196,246.94],[110,130.81,164.81,196],[87.31,130.81,174.61,220],[98,146.83,196,246.94]];
+ const bed=new Float32Array(N);
+ for(let i=0;i<N;i++){const s=i/SR,c=chords[Math.floor(s/4)%4],nx=chords[(Math.floor(s/4)+1)%4],x=cl((s%4-3.6)/.4);let v=0;
+  c.forEach((f,j)=>{const g=nx[j];const fr=f+(g-f)*x;v+=Math.sin(2*Math.PI*fr*s+j)*(.5+.5*Math.sin(s*.7+j))});
+  bed[i]=v*.022*Math.min(1,s/2.5)*Math.min(1,(DUR-s)/3)}
+ const BPM=110,beat=60/BPM;for(let t=5.8;t<25.8;t+=beat){for(let i=0;i<SR*.18;i++){const s=i/SR;bed[Math.floor(t*SR)+i]+=Math.sin(2*Math.PI*(48+60*Math.exp(-s*40))*s)*Math.exp(-s*14)*.11}
+  for(let i=0;i<SR*.03;i++){const k=Math.floor((t+beat/2)*SR)+i;if(k<N)bed[k]+=rnd()*Math.exp(-i/(SR*.006))*.012}}
+ // Eventos.
+ [...CMD].forEach((_,i)=>key(typeAt(i),i));enter(1.75);
+ moves.forEach(([t,d,a],i)=>whoosh(t,d,a*.4,i%2?1:-1));
+ [2.5,5.8,13.6].forEach((t,i)=>pop(t,520+i*60,.16,(i-1)*.3));
+ pop(10.1,600,.16);pop(10.35,760,.1,.3);
+ [0,2,4,5,7,9,11,12,14,16,17].forEach((st,k)=>tone(10.6+k*.155,523.25*Math.pow(2,st/12),.035,.35,(k%3-1)*.4,.6));
+ chime(12.35);
+ clicks.forEach(mouse);Object.values(CL).slice(0,4).forEach(([t])=>swoosh(t+.02));
+ pop(24.2,1046,.12,.3);chime(26.15);
+ // Reverb de envio: 4 combs em paralelo + 2 allpass (Schroeder).
+ const verb=(x)=>{const out=new Float32Array(N);for(const [d,g] of [[1557,.84],[1617,.83],[1491,.85],[1422,.84]]){const buf=new Float32Array(d);let p=0,lp=0;for(let i=0;i<N;i++){const y=buf[p];lp=y*.6+lp*.4;buf[p]=x[i]+lp*g;out[i]+=y*.25;p=(p+1)%d}}
+  for(const d of [225,556]){const buf=new Float32Array(d);let p=0;for(let i=0;i<N;i++){const y=buf[p],v=out[i]+y*.5;buf[p]=v;out[i]=y-v*.5;p=(p+1)%d}}return out};
+ const wl=verb(RL),wr=verb(RR);
+ const outL=new Float32Array(N),outR=new Float32Array(N);let peak=0;
+ for(let i=0;i<N;i++){const b=bed[i]*(1-M[i]);outL[i]=L[i]+wl[i]*.6+b;outR[i]=R[i]+wr[i]*.6+b;peak=Math.max(peak,Math.abs(outL[i]),Math.abs(outR[i]))}
+ const gn=1.05/peak;
  const buf=Buffer.alloc(44+N*4);buf.write('RIFF',0);buf.writeUInt32LE(36+N*4,4);buf.write('WAVEfmt ',8);buf.writeUInt32LE(16,16);buf.writeUInt16LE(1,20);buf.writeUInt16LE(2,22);buf.writeUInt32LE(SR,24);buf.writeUInt32LE(SR*4,28);buf.writeUInt16LE(4,32);buf.writeUInt16LE(16,34);buf.write('data',36);buf.writeUInt32LE(N*4,40);
- for(let i=0;i<N;i++){buf.writeInt16LE(Math.round(Math.tanh(L[i]*gn)*32767),44+i*4);buf.writeInt16LE(Math.round(Math.tanh(R[i]*gn)*32767),46+i*4)}
+ for(let i=0;i<N;i++){buf.writeInt16LE(Math.round(Math.tanh(outL[i]*gn)*.92*32767),44+i*4);buf.writeInt16LE(Math.round(Math.tanh(outR[i]*gn)*.92*32767),46+i*4)}
  return buf;
 }
+
+// --audio: refaz só a trilha e troca o áudio do MP4 existente, sem renderizar os quadros de novo.
+if(process.argv[2]==='--audio'){const tmp=path.join(here,'sfx.wav'),mp4=path.join(here,'lancamento.mp4'),out=path.join(here,'lancamento-novo.mp4');await writeFile(tmp,audio());
+ execFileSync('ffmpeg',['-y','-loglevel','error','-i',mp4,'-i',tmp,'-map','0:v','-map','1:a','-c:v','copy','-c:a','aac','-b:a','192k','-shortest','-movflags','+faststart',out]);
+ await rm(tmp);await rm(mp4);execFileSync('mv',[out,mp4]);console.log('ok áudio',mp4);process.exit(0)}
 
 // A página fica dentro de clipes/ para carregar os quadros reais por caminho relativo.
 const page=path.join(clipDir,'_motion.html');await writeFile(page,html);
