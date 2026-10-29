@@ -46,8 +46,10 @@ const cam=[[0,960,540,1,0],[1.9,960,540,1.04,0],[2.5,X.bad,560,.95,0],[3,X.bad,5
  [26,X.end,540,1,0],[30,X.end,540,1.05,0]];
 const moves=[];for(let i=0;i<cam.length-1;i++){const [a,x,y,z]=cam[i],[b,x2,y2,z2]=cam[i+1];if(Math.hypot(x2-x,y2-y)>120||Math.abs(Math.log(z2/z))>.25)moves.push([a,b-a,Math.min(1,Math.hypot(x2-x,y2-y)/2400+.3)])}
 const typeAt=i=>.4+i*(1.2/CMD.length);
-const tasks=['Âncora da série anexada','Paleta da marca aplicada','Fundo transparente, 2048px'];
-const taskAt=tasks.map((_,i)=>10.7+i*.45);
+// Meio-tom do asset: cada ponto da grade (48x32) recebe a intensidade daquela região da imagem.
+const sharp=require('../../skills/carrossel/node_modules/sharp');
+const GW=48,GH=32;const {data:px}=await sharp(path.join(here,'capturas/asset.png')).resize(GW,GH,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+const half=[];for(let i=0;i<GW*GH;i++){const [r,g,b,a]=px.subarray(i*4,i*4+4);const lum=(r*.3+g*.59+b*.11)/255;half.push(+(a/255*(.45+.55*(1-Math.abs(lum-.55)))).toFixed(3))}
 // Título animado palavra a palavra.
 const words=(id,html,left,top,size=62)=>`<div class="o h" id="${id}" style="left:${left}px;top:${top}px;font-size:${size}px">${html.split(' ').map(w=>`<span class="w">${w}</span>`).join(' ')}</div>`;
 
@@ -67,15 +69,17 @@ body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#11
 .term .tx{padding:44px;font:500 46px ui-monospace,Menlo,monospace;color:#14213a;white-space:nowrap}.term b{color:#0869f5;font-weight:500}
 .caret{display:inline-block;width:22px;height:48px;background:#0869f5;vertical-align:-8px;margin-left:4px}
 /* Geração no estilo do Codex, em azul: grade de pontos em onda, tarefas e porcentagem. */
-.think{width:1240px;height:720px;margin:-360px 0 0 -620px;border-radius:30px;background:#060d1f;box-shadow:0 40px 100px #0a2a6a40;overflow:hidden}
-.think .lb{position:absolute;left:46px;top:36px;font:500 36px ui-monospace,Menlo,monospace;color:#5da2ff}
-.think .lb span{font-family:Satoshi;font-weight:400;margin-left:14px;background:linear-gradient(90deg,#7d8aa3 0,#fff 40%,#7d8aa3 80%) 0 0/300% 100%;-webkit-background-clip:text;color:transparent}
-#dots{position:absolute;left:520px;top:110px;right:40px;bottom:40px;display:grid;grid-template-columns:repeat(20,1fr);grid-template-rows:repeat(16,1fr);place-items:center}
-#asset{position:absolute;left:470px;top:90px;width:760px;opacity:0;filter:drop-shadow(0 30px 40px #000a)}
-#dots i{width:13px;height:13px;border-radius:50%;background:#3d8bff}
-.tasks{position:absolute;left:46px;top:130px;display:flex;flex-direction:column;gap:22px}
-.task{display:flex;align-items:center;gap:16px;font-size:28px;color:#d7e3f7;opacity:0}.task i{width:30px;height:30px;border-radius:50%;border:2px solid #3d8bff;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:17px;color:#fff}
-.pct{position:absolute;right:46px;bottom:40px;padding:14px 26px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff1f;font:500 40px Satoshi;color:#fff;font-variant-numeric:tabular-nums}
+.think{width:1320px;height:800px;margin:-370px 0 0 -660px;border-radius:30px;background:#fff;box-shadow:0 40px 100px #0a2a6a26,0 0 0 1px #e3edfb;overflow:hidden}
+.think .top{position:absolute;left:0;right:0;top:0;height:56px;display:flex;align-items:center;gap:12px;padding:0 26px;border-bottom:1px solid #eef3fa;font-size:20px;font-weight:500;color:#5b7291}
+.think .top b{width:26px;height:26px;border-radius:8px;background:#111827;color:#fff;font:700 14px Satoshi;display:flex;align-items:center;justify-content:center}
+.msg{position:absolute;right:40px;top:84px;max-width:860px;display:flex;align-items:center;gap:16px;padding:16px 22px;border-radius:20px;background:#f2f6fc;font-size:24px;color:#14213a;opacity:0}
+.msg img{width:54px;height:54px;border-radius:10px;object-fit:cover;background:#e3eefc}
+.canvas{position:absolute;left:210px;top:180px;width:900px;height:600px;border-radius:22px;background:#060d1f;overflow:hidden}
+.canvas .lb{position:absolute;left:28px;top:22px;font-size:26px;z-index:3;background:linear-gradient(90deg,#7d8aa3 0,#fff 40%,#7d8aa3 80%) 0 0/300% 100%;-webkit-background-clip:text;color:transparent}
+#dots{position:absolute;inset:0;display:grid;grid-template-columns:repeat(${GW},1fr);grid-template-rows:repeat(${GH},1fr);place-items:center}
+#dots i{width:15px;height:15px;border-radius:50%;background:#3d8bff}
+#asset{position:absolute;left:0;top:0;width:900px;height:600px;object-fit:contain;opacity:0}
+.pct{position:absolute;right:26px;bottom:24px;z-index:3;padding:14px 26px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff1f;font:500 40px Satoshi;color:#fff;font-variant-numeric:tabular-nums}
 .win{width:1440px;height:944px;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 40px 100px #0a2a6a2e,0 0 0 1px #e3edfb}
 .view{position:absolute;left:0;top:44px;width:1440px;height:900px;overflow:hidden;background:#f8faff}
 .view img{position:absolute;left:0;top:0;width:1440px;display:block}
@@ -94,9 +98,9 @@ body{font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased;color:#11
 <div class="o term" id="term" style="left:${X.term}px;top:540px"><div class="bar"><i></i><i></i><i></i></div><div class="tx"><b>›</b> <span id="typed"></span><span class="caret" id="caret"></span></div></div>
 ${words('h1','Sem processo, sai <em>isso.</em>',X.bad-700,150)}
 ${bad.map((s,i)=>`<div class="o card" id="b${i}" style="left:${sx('bad',i)}px;top:560px"><img src="${s}"></div>`).join('')}
-<div class="o think" id="think" style="left:${X.think}px;top:540px"><div class="lb">Codex<span id="thl">Gerando asset no estilo da marca</span></div>
- <div class="tasks">${tasks.map((t,i)=>`<div class="task" id="k${i}"><i id="ki${i}"></i>${t}</div>`).join('')}</div>
- <div id="dots">${'<i></i>'.repeat(320)}</div><img id="asset" src="${rel('docs/motion/capturas/asset.png')}"><div class="pct" id="pct">0%</div></div>
+<div class="o think" id="think" style="left:${X.think}px;top:540px"><div class="top"><b>&gt;_</b>Codex · image gen</div>
+ <div class="msg" id="msg"><img src="${rel('exemplos/oratry/ta-caro/v2/slide-01.png')}">Gera um asset 3D: pessoa levantando a mão numa reunião, no estilo da série anexada.</div>
+ <div class="canvas"><div class="lb" id="thl">Gerando imagem</div><div id="dots">${'<i></i>'.repeat(GW*GH)}</div><img id="asset" src="${rel('docs/motion/capturas/asset.png')}"><div class="pct" id="pct">0%</div></div></div>
 ${words('h2','Com a skill, sai <em>isso.</em>',X.good-700,150)}
 ${words('h3','Faltou asset? O Codex <em>gera.</em>',X.think-700,70,56)}
 ${good.map((s,i)=>`<div class="o card" id="g${i}" style="left:${sx('good',i)}px;top:560px"><img src="${s}"></div>`).join('')}
@@ -117,7 +121,7 @@ function lerpK(K,t,logIdx){for(let i=0;i<K.length-1;i++){const a=K[i],b=K[i+1];i
 const show=(id,o,tr='')=>{const e=$(id);e.style.opacity=o;e.style.transform=tr};
 const pop=(id,t,t0,d=.5,dy=40,sc=.9)=>{const p=back((t-t0)/d),f=out((t-t0)/(d*.6));show(id,f,'translateY('+(1-cl(p))*dy+'px) scale('+(sc+(1-sc)*p)+')')};
 const kin=(id,t,t0)=>{show(id,1);[...$(id).querySelectorAll('.w')].forEach((w,i)=>{const p=back((t-t0-i*.07)/.45);w.style.opacity=out((t-t0-i*.07)/.25);w.style.transform='translateY('+(1-cl(p))*50+'px) rotate('+(1-cl(p))*6+'deg)'})};
-const dots=[...document.querySelectorAll('#dots i')];
+const dots=[...document.querySelectorAll('#dots i')],HALF=${JSON.stringify(half)};
 const win=(t,a,b,f=.3)=>t>a&&t<b?Math.min(out((t-a)/f),1-out((t-(b-f))/f)):0;
 // Qual quadro de clipe real mostrar no instante t (o último clipe iniciado manda; antes do 1º, nenhum).
 function clipFrame(t){let pick=null;for(const [k,[t0,sp]] of Object.entries(CL)){if(t>=t0){const a=Math.max(0,(t-t0)*sp);let f=SH[k][0][1];for(const [at,ff] of SH[k]){if(at<=a)f=ff;else break}pick=k+'/'+f}}return pick}
@@ -127,12 +131,15 @@ window.render=async t=>{
  const v=Math.abs(nx-cx)*cz+Math.abs(Math.log(nz/cz))*700;$('mbv').setAttribute('stdDeviation',(v<6?0:Math.min(9,(v-6)/7)).toFixed(1)+' 0');
  const cmd=${JSON.stringify(CMD)};pop('term',t,.05);$('typed').textContent=cmd.slice(0,Math.floor(cl((t-.4)/1.2)*cmd.length));$('caret').style.opacity=Math.floor(t*2.4)%2?1:.2;
  kin('h1',t,2.45);[0,1,2,3].forEach(i=>pop('b'+i,t,2.5+i*.06,.45,100));
- kin('h3',t,10.05);pop('think',t,10.1,.6,60,.88);const g=cl((t-10.5)/1.6);
- const ar=back((t-12.15)/.6),ao=out((t-12.1)/.3);$('asset').style.opacity=ao;$('asset').style.transform='scale('+(.6+.4*ar)+') translateY('+(1-cl(ar))*40+'px)';$('dots').style.opacity=1-ao*.85;$('pct').textContent=Math.round(100*(g<1?io(g)*.99:1))+'%';
- $('thl').style.backgroundPosition=(-(t*140)%300)+'% 0';
- ${JSON.stringify(taskAt)}.forEach((a,i)=>{const p=out((t-a)/.3),done=t>a+.35;$('k'+i).style.opacity=p;$('k'+i).style.transform='translateX('+(1-p)*-30+'px)';const ic=$('ki'+i);ic.textContent=done?'✓':'';ic.style.background=done?'#0869f5':'transparent'});
- dots.forEach((d,i)=>{const c=i%20,r=Math.floor(i/20);const w1=Math.sin(c*.5-r*.2-t*4.4),w2=Math.sin(c*.24+r*.46-t*2.7+1.3);const band=cl(1-Math.abs(c/19-(g*1.3-.15))*2.2);
-  const val=cl(.12+.45*(.5+.5*w1)*(.5+.5*w2)+.6*band);d.style.transform='scale('+(.22+.88*val).toFixed(3)+')';d.style.opacity=(.12+.88*val).toFixed(3)});
+ kin('h3',t,10.05);pop('think',t,10.1,.6,60,.9);pop('msg',t,10.35,.45,20,.95);
+ // Geração: primeiro ruído em onda; depois os pontos assumem o meio-tom do asset; no fim a imagem real revela com foco.
+ const g=cl((t-10.6)/1.7),form=io(cl((g-.25)/.6)),rev=out((t-12.35)/.55);
+ $('pct').textContent=Math.round(100*(g<1?io(g)*.99:1))+'%';$('pct').style.opacity=1-out((t-12.6)/.3);
+ $('thl').style.backgroundPosition=(-(t*140)%300)+'% 0';$('thl').style.opacity=1-rev;
+ dots.forEach((d,i)=>{const c=i%${GW},r=Math.floor(i/${GW});const w=(.5+.5*Math.sin(c*.35-r*.22-t*4.6))*(.5+.5*Math.sin(c*.17+r*.4-t*2.8+1.3));
+  const sweep=cl((g*1.25-c/${GW-1})*4),target=HALF[i]*sweep,noise=.12+.5*w;
+  const val=noise*(1-form)+(target+.04)*form;d.style.transform='scale('+(.15+.95*val).toFixed(3)+')';d.style.opacity=((.15+.85*val)*(1-rev)).toFixed(3)});
+ $('asset').style.opacity=rev;$('asset').style.filter='blur('+((1-rev)*18).toFixed(1)+'px) drop-shadow(0 30px 40px #0008)';$('asset').style.transform='scale('+(1.04-.04*rev)+')';
  kin('h2',t,5.75);[0,1,2,3].forEach(i=>pop('g'+i,t,5.8+i*.06,.45,100));
  pop('win',t,13.6,.6,80,.92);
  $('gimg').style.transform='translateY('+(-lerpK(S,Math.max(t,14.2),0)[0])+'px)';
@@ -163,7 +170,7 @@ function audio(){
  const thump=(t,amp=.4)=>{for(let i=0;i<SR*.3;i++){const s=i/SR;add(t,i,Math.sin(2*Math.PI*(55+90*Math.exp(-s*30))*s)*Math.exp(-s*9)*amp)}};
  for(let i=0;i<N;i++){const s=i/SR,env=Math.min(1,s/2)*Math.min(1,(DUR-s)/2),lfo=.6+.4*Math.sin(s*.8);const v=(Math.sin(2*Math.PI*130.81*s)+.7*Math.sin(2*Math.PI*196*s)+.5*Math.sin(2*Math.PI*329.63*s)+.3*Math.sin(2*Math.PI*493.88*s))*.016*env*lfo;L[i]+=v;R[i]+=v}
  [...CMD].forEach((_,i)=>key(typeAt(i)));thump(1.75);
- taskAt.forEach((t,i)=>blip(t+.35,820+i*90,.12));pop(12.15,880,.32);
+ for(let k=0;k<12;k++)blip(10.6+1.7*k/12,700+k*45,.07);pop(12.4,880,.32);
  moves.forEach(([t,d,a])=>whoosh(t,d,a*.8));
  [2.5,5.8,10.1,13.6].forEach(t=>pop(t,520,.22));
  clicks.forEach(mouse);Object.values(CL).slice(0,4).forEach(([t])=>whoosh(t,.3,.28));pop(24.2,1040,.18);
