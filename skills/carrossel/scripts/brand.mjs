@@ -20,6 +20,6 @@ export const mark=logo?`data:${logo.endsWith('.svg')?'image/svg+xml':'image/png'
 // Os templates da galeria foram escritos com a marca de origem; aqui viram a marca do projeto.
 export function brandify(text){
  return text.replaceAll('Satoshi',fam).replaceAll('#0869f5',marca.cores?.primaria||'#0869f5').replaceAll('#0869F5',marca.cores?.primaria||'#0869F5').replaceAll('#f8faff',marca.cores?.fundo||'#f8faff')
-  .replaceAll('Feito para dar voz às suas ideias.',marca.tagline||'').replace(/Oratry(?![A-Za-z])/g,marca.nome||'Marca');
+  .replaceAll('Feito para dar voz às suas ideias.',marca.tagline||'').replace(/Oratry(?![A-Za-z])/g,marca.nome||'Marca').replace(/ORATRY(?![A-Za-z])/g,(marca.nome||'Marca').toLocaleUpperCase('pt-BR'));
 }
 export const writeFile=(file,data,...rest)=>fsWrite(file,typeof data==='string'&&/\.html?$/.test(String(file))?brandify(data):data,...rest);
