@@ -35,12 +35,14 @@ Vídeo de 24s: [`docs/motion/lancamento.mp4`](docs/motion/lancamento.mp4)
 Requer Node 18+.
 
 ```bash
-git clone https://github.com/<voce>/carrossel-skill
+git clone https://github.com/guilhermealvestech/carrossel-skill
 cp -r carrossel-skill/skills/carrossel ~/.claude/skills/carrossel   # Claude Code
 cp -r carrossel-skill/skills/carrossel ~/.codex/skills/carrossel    # Codex
 npm install --prefix ~/.claude/skills/carrossel
 npx --prefix ~/.claude/skills/carrossel playwright install chromium
 ```
+
+Se o `npm install` mostrar um aviso de `allow-scripts`, pode ignorar.
 
 Depois, no seu projeto: peça um carrossel ("faz um carrossel sobre ...") ou rode `/carrossel`. Na primeira vez a skill monta a pasta `carrosseis/` e faz o onboarding da marca.
 

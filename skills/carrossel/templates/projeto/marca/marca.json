@@ -7,12 +7,19 @@
     "texto-suave": "#5B7291",
     "fundo": "#F8FAFF",
     "fundo-profundo": "#E3EEFF",
-    "apoio": ["#BFDFFF", "#F3E9D2"]
+    "apoio": [
+      "#BFDFFF",
+      "#F3E9D2"
+    ]
   },
   "fonte": {
     "familia": "Inter",
-    "arquivos": {}
+    "arquivos": {},
+    "css": ""
   },
   "logo": "",
-  "plataformas": ["Instagram", "X"]
+  "plataformas": [
+    "Instagram",
+    "X"
+  ]
 }

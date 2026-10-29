@@ -12,7 +12,7 @@ Se o projeto for o próprio site da marca, leia o CSS: cores, fonte, raios e som
 
 ## 2. Extrair
 - **Cores:** primária, texto, texto suave, fundo e 1 ou 2 de apoio, em hex. Confira o contraste do texto sobre o fundo.
-- **Fonte:** família e pesos usados. Copie os arquivos para `marca/fontes/` quando a licença permitir; senão, use a mesma família do Google Fonts.
+- **Fonte:** família e pesos usados. Três jeitos, em `marca.json > fonte`: `arquivos` com woff2 locais em `marca/fontes/` (ex.: `{"500": "fontes/marca-500.woff2"}`); `css` com a URL de um CSS de fonte web (Fontshare, Adobe Fonts); ou só `familia`, que cai no Google Fonts.
 - **Elementos:** estilo dos cards, sombras, formas e ícones que se repetem.
 - **Tom:** como a marca escreve (curto/longo, formal/informal, usa humor?).
 

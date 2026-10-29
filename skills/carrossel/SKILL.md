@@ -7,7 +7,7 @@ description: Cria carrosséis e posts estáticos com a identidade da marca (Inst
 
 Workflow para produzir carrosséis com cara de marca, não de template. A qualidade vem de quatro coisas: **roteiro antes do visual**, **a galeria como referência**, **assets próprios** e **checagem visual de cada render**. Siga a ordem abaixo; não pule etapas.
 
-Caminhos: `<skill>` é a pasta deste arquivo. O projeto do usuário fica em `carrosseis/` na raiz do repositório dele (ou outro caminho passado com `--dir`).
+Caminhos: `<skill>` é a pasta deste arquivo. Rode os scripts da raiz do projeto do usuário; `--dir` é relativo a ela. O projeto do usuário fica em `carrosseis/` na raiz do repositório dele (ou outro caminho passado com `--dir`).
 
 ## 0. Primeira vez no projeto
 
@@ -32,7 +32,7 @@ Siga `references/roteiro.md`. Entregue **só texto**: um bloco por slide, de 4 a
 
 Siga `references/visual.md`. Resumo:
 - Parta das peças aprovadas na galeria, não de um layout novo a cada vez.
-- Use `templates/slide-base.html` como esqueleto e os tokens de `marca.json`.
+- Use `templates/slide-base.html` como esqueleto. Ele não lê o `marca.json`: troque à mão os tokens do `:root`, o `<link>` da fonte e o nome da marca pelos valores de `marca.json`.
 - Um foco por slide. Assets grandes, integrados à composição. Prints reais quando falar de produto.
 - Se nenhum asset da biblioteca servir, **não invente nem gere sozinho**: diga qual asset falta e entregue o prompt pronto (`references/image-gen.md`) para o usuário gerar no Codex ou no ChatGPT.
 - Nunca numere slides ("01 / 05"): a plataforma já mostra.
@@ -40,7 +40,7 @@ Siga `references/visual.md`. Resumo:
 ## 4. Render e checagem
 
 1. Salve cada slide em `carrosseis/<id>/v<N>/slide-NN.html` com fontes e imagens resolvendo localmente.
-2. `node <skill>/scripts/render.mjs <id>/v<N>` gera `slide-NN.png` (1080×1350) e `slide-NN-2x.png` (2160×2700).
+2. Da raiz do projeto: `node <skill>/scripts/render.mjs <id>/v<N> --dir carrosseis` gera `slide-NN.png` (1080×1350) e `slide-NN-2x.png` (2160×2700).
 3. **Abra e olhe cada PNG** antes de entregar: texto cortado, sobreposição, texto colado na borda, contraste, asset pequeno demais. Corrija e renderize de novo. Nunca entregue sem ter olhado.
 
 ## 5. Entrega
